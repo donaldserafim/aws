@@ -1,0 +1,49 @@
+import json
+import boto3
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+client = boto3.client("ecs")
+
+
+
+
+def lambda_handler(event, context):
+    try:
+        cluster_name = event["cluster"]
+        task_definition = event["task_definition"]
+
+
+        response = client.run_task(
+            cluster=cluster_name,
+            launchType = 'FARGATE',
+            taskDefinition=task_definition,
+            count = 1,
+            platformVersion='LATEST',
+            networkConfiguration={
+                'awsvpcConfiguration': {
+                    'subnets': [
+                        'subnet-20439f7b', 
+                        'subnet-9ec617f8'
+                    ],
+                    'securityGroups': [
+                        "sg-095d415708ebaaf07",
+                    ],
+                    'assignPublicIp': 'ENABLED'
+                }
+            })
+
+        print(response)
+
+        return {
+            'statusCode': 200,
+            'body': "OK"
+        }
+    except Exception as e:
+        print(e)
+
+        return {
+            'statusCode': 500,
+            'body': str(e)
+        }    
